@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>XY Pad Control</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            touch-action: none; 
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            /* Set a max-width for desktop */
+            max-width: 250px;
+            width: 100%;
+        }
+        canvas {
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            /* Make canvas width responsive to its container */
+            width: 100%;
+        }
+        .coords {
+            margin-top: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* --- THIS IS THE NEW PART FOR MOBILE --- */
+        /* On screens smaller than 600px */
+        @media (max-width: 600px) {
+            .container {
+                /* Let the container take up 90% of the screen width */
+                max-width: 90vw;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <canvas id="xy-pad"></canvas> <div class="coords">
+        X: <span id="x-value">50</span>, Y: <span id="y-value">50</span>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('xy-pad');
+    const ctx = canvas.getContext('2d');
+    const xValueSpan = document.getElementById('x-value');
+    const yValueSpan = document.getElementById('y-value');
+
+    const ballRadius = 10;
+    let ball = { x: 0, y: 0 }; // Will be set by resizeCanvas
+    let isDragging = false;
+
+    // --- NEW: Function to resize the canvas ---
+    function resizeCanvas() {
+        // Get the current width of the canvas element from CSS
+        const size = canvas.clientWidth;
+        
+        // Set the canvas drawing buffer size
+        canvas.width = size;
+        canvas.height = size; // This keeps it square
+
+        // Reset the ball to the center after resizing
+        ball.x = canvas.width / 2;
+        ball.y = canvas.height / 2;
+        
+        // Redraw the canvas and send initial data
+        redraw();
+        updateValuesAndSendData();
+    }
+    
+    // --- Drawing Functions ---
+    function drawBall() {
+        // Scale ball radius slightly with canvas size for better look
+        const scaledRadius = canvas.width / 20;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, scaledRadius, 0, Math.PI * 2);
+        ctx.fillStyle = '#0075FF';
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function redraw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBall();
+    }
+
+    // --- Data and Position Update Functions ---
+    function updateValuesAndSendData() {
+        const xVal = Math.round((ball.x / canvas.width) * 100);
+        const yVal = Math.round(((canvas.height - ball.y) / canvas.height) * 100);
+
+        xValueSpan.textContent = xVal;
+        yValueSpan.textContent = yVal;
+        
+        sendData(xVal, yVal);
+    }
+
+    async function sendData(x, y) {
+        try {
+            await fetch('/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ x: x, y: y })
+            });
+        } catch (error) {
+            console.error('Error sending data:', error);
+        }
+    }
+
+    function handleInteraction(event) {
+        event.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        let clientX, clientY;
+        if (event.type.startsWith('touch')) {
+            clientX = event.touches[0].clientX;
+            clientY = event.touches[0].clientY;
+        } else {
+            clientX = event.clientX;
+            clientY = event.clientY;
+        }
+        let newX = clientX - rect.left;
+        let newY = clientY - rect.top;
+        ball.x = Math.max(0, Math.min(canvas.width, newX));
+        ball.y = Math.max(0, Math.min(canvas.height, newY));
+        redraw();
+        updateValuesAndSendData();
+    }
+
+    // --- Event Listeners ---
+    canvas.addEventListener('mousedown', (e) => { isDragging = true; handleInteraction(e); });
+    canvas.addEventListener('mousemove', (e) => { if (isDragging) { handleInteraction(e); } });
+    canvas.addEventListener('mouseup', () => { isDragging = false; });
+    canvas.addEventListener('touchstart', (e) => { isDragging = true; handleInteraction(e); });
+    canvas.addEventListener('touchmove', (e) => { if (isDragging) { handleInteraction(e); } });
+    canvas.addEventListener('touchend', () => { isDragging = false; });
+    
+    // --- NEW: Listen for window resize events ---
+    window.addEventListener('resize', resizeCanvas);
+
+    // --- Initial setup ---
+    resizeCanvas(); // Call it once to set the initial size
+    
+</script>
+
+</body>
+</html>
