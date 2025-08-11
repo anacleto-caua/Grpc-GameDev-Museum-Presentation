@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unity World Generator</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Using a common font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-2xl bg-slate-800 rounded-xl shadow-2xl p-8">
+        <h1 class="text-3xl font-bold text-center mb-2 text-cyan-400">World Generator Controls</h1>
+        <p class="text-center text-slate-400 mb-8">Use this form to configure the procedural world generation parameters.</p>
+
+        <!-- The form now has an ID so our script can find it -->
+        <form id="generator-form" class="space-y-8">
+
+            <!-- Section for Terrain Dimensions -->
+            <fieldset class="border border-slate-700 rounded-lg p-6">
+                <legend class="text-xl font-semibold px-2 text-slate-300">Terrain Dimensions</legend>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                    <div>
+                        <label for="width" class="block text-sm font-medium text-slate-400 mb-2">Width</label>
+                        <input type="number" id="width" name="width" value="256" min="32" max="1024" step="16" class="w-full bg-slate-700 border-slate-600 rounded-md p-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label for="depth" class="block text-sm font-medium text-slate-400 mb-2">Depth</label>
+                        <input type="number" id="depth" name="depth" value="256" min="32" max="1024" step="16" class="w-full bg-slate-700 border-slate-600 rounded-md p-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label for="height" class="block text-sm font-medium text-slate-400 mb-2">Max Height</label>
+                        <input type="number" id="height" name="height" value="35" min="5" max="200" class="w-full bg-slate-700 border-slate-600 rounded-md p-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Section for Noise Settings -->
+            <fieldset class="border border-slate-700 rounded-lg p-6">
+                <legend class="text-xl font-semibold px-2 text-slate-300">Noise Settings</legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div>
+                        <label for="seed" class="block text-sm font-medium text-slate-400 mb-2">Seed</label>
+                        <input type="number" id="seed" name="seed" value="1337" min="0" max="999999" class="w-full bg-slate-700 border-slate-600 rounded-md p-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition">
+                    </div>
+                     <div>
+                        <label for="frequency" class="block text-sm font-medium text-slate-400 mb-2">Frequency</label>
+                        <input type="number" id="frequency" name="frequency" value="0.01" min="0.001" max="0.1" step="0.001" class="w-full bg-slate-700 border-slate-600 rounded-md p-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="noiseType" class="block text-sm font-medium text-slate-400 mb-2">Noise Type</label>
+                        <select id="noiseType" name="noiseType" class="w-full bg-slate-700 border-slate-600 rounded-md p-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition">
+                            <option value="OpenSimplex2" selected>Open Simplex 2</option>
+                            <option value="Perlin">Perlin</option>
+                            <option value="Value">Value</option>
+                            <option value="Cellular">Cellular</option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Section for Fractal Settings -->
+            <fieldset class="border border-slate-700 rounded-lg p-6">
+                <legend class="text-xl font-semibold px-2 text-slate-300">Fractal Settings</legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div>
+                        <label for="fractalType" class="block text-sm font-medium text-slate-400 mb-2">Fractal Type</label>
+                        <select id="fractalType" name="fractalType" class="w-full bg-slate-700 border-slate-600 rounded-md p-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition">
+                            <option value="FBm" selected>FBM</option>
+                            <option value="Ridged">Ridged</option>
+                            <option value="PingPong">Ping Pong</option>
+                            <option value="None">None</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="octaves" class="block text-sm font-medium text-slate-400 mb-2">Octaves</label>
+                        <input type="number" id="octaves" name="octaves" value="5" min="1" max="10" class="w-full bg-slate-700 border-slate-600 rounded-md p-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label for="lacunarity" class="block text-sm font-medium text-slate-400 mb-2">Lacunarity</label>
+                        <input type="number" id="lacunarity" name="lacunarity" value="2.0" min="1.0" max="4.0" step="0.1" class="w-full bg-slate-700 border-slate-600 rounded-md p-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label for="gain" class="block text-sm font-medium text-slate-400 mb-2">Gain (Persistence)</label>
+                        <input type="number" id="gain" name="gain" value="0.5" min="0.1" max="1.0" step="0.05" class="w-full bg-slate-700 border-slate-600 rounded-md p-2 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col md:flex-row justify-end gap-4">
+                <button type="button" id="reset-button" class="w-full md:w-auto bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-300 ease-in-out">
+                    Reset
+                </button>
+                <button type="submit" id="submit-button" class="w-full md:w-auto bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 ease-in-out transform hover:scale-105">
+                    Generate World
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- JavaScript to handle form submission and reset -->
+    <script>
+        const form = document.getElementById('generator-form');
+        const submitButton = document.getElementById('submit-button');
+        const resetButton = document.getElementById('reset-button');
+
+        // Handle form submission
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            submitButton.textContent = 'Sending...';
+            submitButton.disabled = true;
+
+            const formData = new FormData(form);
+            const data = {};
+            for (const [key, value] of formData.entries()) {
+                data[key] = isNaN(value) ? value : Number(value);
+            }
+
+            try {
+                const response = await fetch('/procedural_showcase/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                const result = await response.json();
+                console.log('Success:', result);
+                
+                submitButton.textContent = 'Success!';
+                submitButton.classList.remove('bg-cyan-500', 'hover:bg-cyan-600');
+                submitButton.classList.add('bg-green-500');
+
+            } catch (error) {
+                console.error('Error:', error);
+                
+                submitButton.textContent = 'Error!';
+                submitButton.classList.remove('bg-cyan-500', 'hover:bg-cyan-600');
+                submitButton.classList.add('bg-red-500');
+            } finally {
+                setTimeout(() => {
+                    submitButton.textContent = 'Generate World';
+                    submitButton.disabled = false;
+                    submitButton.classList.remove('bg-green-500', 'bg-red-500');
+                    submitButton.classList.add('bg-cyan-500', 'hover:bg-cyan-600');
+                }, 2000);
+            }
+        });
+
+        // Handle form reset
+        resetButton.addEventListener('click', () => {
+            // This natively resets the form to its initial HTML values
+            form.reset();
+
+            // Provide visual feedback
+            resetButton.textContent = 'Reset!';
+            setTimeout(() => {
+                resetButton.textContent = 'Reset';
+            }, 1000);
+        });
+    </script>
+
+</body>
+</html>

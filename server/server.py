@@ -11,6 +11,7 @@ def index():
     """Serves the main HTML page."""
     return render_template('index.html')
 
+# ------------------------ First unity showcase showing ik ------------------------
 @app.route('/ik_showcase')
 def ik_showcase():
     """Serves the main ik showcase page."""
@@ -25,15 +26,32 @@ def ik_showcase_update():
 
     # Data arived    
     print(f"Received => X: {x_val}, Y: {y_val}")
-    result = unity_client.call("MoveObject", {"x": x_val, "y": y_val}, True)
+    result = ik_unity_client.call("MoveObject", {"x": x_val, "y": y_val}, True)
     
     # Send a confirmation response back (optional)
     return jsonify(status="success", x=x_val, y=y_val)
 
-def send_qr_code_link(link):
-    """Sends the link so Unity can assemble the qr code."""
-    result = unity_client.call("ShowLinkQrCode", {"link": link}, True)
+# ------------------------ Second unity showcase showing procedural terrain generation ------------------------
+@app.route('/procedural_showcase')
+def procedural_showcase():
+    return render_template('procedural_showcase.html')
 
+@app.route('/procedural_showcase/update', methods=['POST'])
+def procedural_showcase_update():
+    data = request.get_json()
+
+    # Data arived    
+    print(f"Received => {data}")
+    
+    # return jsonify(status="success", nah="nahhh")
+
+# ------------------------ Third unity showcase showing ????????? ------------------------
+
+# ------------------------ General use ------------------------
+def send_qr_code_link(client, link):
+    """Sends the link so Unity can assemble the qr code."""
+    result = client.call("ShowLinkQrCode", {"link": link}, True)
+ 
 def get_local_ip():
     """Only way I found to get my IP."""
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -50,23 +68,30 @@ def get_local_ip():
     
     return IP
 
-if __name__ == '__main__':
-    
+def make_unity_client(HOST, PORT, service_name):
     # Create a client for comunication to the unity server
-    U_HOST = "127.0.0.1"
-    U_PORT = "8080"
     unity_client = JsonRpcClient(U_HOST, U_PORT)
 
+    # Send the URL to Unity before starting the server.
+    local_ip = get_local_ip()
+    flask_server_url = f"http://{local_ip}:{PORT}/{service_name}"
+    send_qr_code_link(unity_client, flask_server_url)
+
+    return unity_client
+
+
+
+if __name__ == '__main__':
+    global ik_unity_client
+
+    U_HOST = get_local_ip()
+    U_PORT = "8080"
+    ik_unity_client = make_unity_client(U_HOST, U_PORT, "ik_showcase")
 
     # OPENING THE FLASK SERVER!!!!
     # '0.0.0.0' makes the server accessible from any device on the local network.
     HOST = "0.0.0.0"
     PORT = 5000
-
-    # Send the URL to Unity before starting the server.
-    local_ip = get_local_ip()
-    flask_server_url = f"http://{local_ip}:{PORT}/ik_showcase"
-    send_qr_code_link(flask_server_url)
 
     # Start the Flask server
     app.run(host=HOST, port=PORT, debug=True)
