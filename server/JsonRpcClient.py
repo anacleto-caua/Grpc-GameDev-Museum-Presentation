@@ -14,16 +14,21 @@ class JsonRpcClient:
         self.request_id = 0
         self.headers = {"Content-Type": "application/json"}
 
-    def call(self, method: str, params: dict = None):
+    def call(self, method: str, params: dict = None, debug: bool = True):
         """
         Calls a remote method on the JSON-RPC server.
 
         :param method: The name of the method to call.
         :param params: A dictionary of parameters for the method.
+        :param debug: A boolean for debuging.
         :return: The 'result' from the server's response.
         :raises ConnectionError: If there is a network issue or a server-level error.
         :raises ValueError: If the response is not valid JSON or is a JSON-RPC error.
         """
+
+        if debug:
+            print(f"Calling method: '{method}'...")
+
         self.request_id += 1
         
         payload = {
@@ -46,7 +51,11 @@ class JsonRpcClient:
             if 'error' in data:
                 raise ValueError(f"RPC Error: {data['error']}")
             
-            return data.get('result')
+            result = data.get('result')
+            if debug:
+                print(f"Response: '{result}'")
+
+            return result
 
         except requests.exceptions.RequestException as e:
             raise ConnectionError(f"Network error calling {self.server_url}: {e}") from e

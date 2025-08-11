@@ -2,163 +2,104 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>XY Pad Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Landing Page</title>
     <style>
+        /* --- Basic Reset & Font --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: white;
+            /* --- Gradient Background --- */
+            /* A smooth, modern gradient that animates subtly */
+            background: linear-gradient(45deg, #4c51bf, #6b46c1, #b794f4, #4fd1c5);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+            height: 100vh;
+            /* --- Centering Content --- */
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            touch-action: none; 
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            /* Set a max-width for desktop */
-            max-width: 250px;
-            width: 100%;
-        }
-        canvas {
-            border: 2px solid #ccc;
-            border-radius: 5px;
-            cursor: pointer;
-            /* Make canvas width responsive to its container */
-            width: 100%;
-        }
-        .coords {
-            margin-top: 15px;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #333;
+            text-align: center;
         }
 
-        /* --- THIS IS THE NEW PART FOR MOBILE --- */
-        /* On screens smaller than 600px */
+        /* --- Gradient Animation Keyframes --- */
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- Main Content Container --- */
+        .content {
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.9;
+        }
+
+        /* --- Links Styling --- */
+        .links a {
+            display: block;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            margin: 1rem auto;
+            border-radius: 50px; /* Pill shape */
+            max-width: 300px;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(5px); /* Frosted glass effect */
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .links a:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px); /* Lifts the button on hover */
+        }
+
+        /* --- Responsive Design for Mobile --- */
         @media (max-width: 600px) {
-            .container {
-                /* Let the container take up 90% of the screen width */
-                max-width: 90vw;
+            h1 {
+                font-size: 2.5rem;
+            }
+            p {
+                font-size: 1rem;
+            }
+            .content {
+                padding: 1rem;
             }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <canvas id="xy-pad"></canvas> <div class="coords">
-        X: <span id="x-value">50</span>, Y: <span id="y-value">50</span>
+    <div class="content">
+        <h1>Welcome</h1>
+        <p>Here are some links to get you started.</p>
+        
+        <div class="links">
+            <!-- TODO: Replace "#" with your actual links -->
+            <a href="#" target="_blank">Link One</a>
+            <a href="#" target="_blank">Link Two</a>
+            <a href="#" target="_blank">Link Three</a>
+        </div>
     </div>
-</div>
-
-<script>
-    const canvas = document.getElementById('xy-pad');
-    const ctx = canvas.getContext('2d');
-    const xValueSpan = document.getElementById('x-value');
-    const yValueSpan = document.getElementById('y-value');
-
-    const ballRadius = 10;
-    let ball = { x: 0, y: 0 }; // Will be set by resizeCanvas
-    let isDragging = false;
-
-    function resizeCanvas() {
-        // Get the current width of the canvas element from CSS
-        const size = canvas.clientWidth;
-        
-        // Set the canvas drawing buffer size
-        canvas.width = size;
-        canvas.height = size; // This keeps it square
-
-        // Reset the ball to the center after resizing
-        ball.x = canvas.width / 2;
-        ball.y = canvas.height / 2;
-        
-        // Redraw the canvas and send initial data
-        redraw();
-        updateValuesAndSendData();
-    }
-    
-    // --- Drawing Functions ---
-    function drawBall() {
-        // Scale ball radius slightly with canvas size for better look
-        const scaledRadius = canvas.width / 20;
-        ctx.beginPath();
-        ctx.arc(ball.x, ball.y, scaledRadius, 0, Math.PI * 2);
-        ctx.fillStyle = '#0075FF';
-        ctx.fill();
-        ctx.closePath();
-    }
-
-    function redraw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawBall();
-    }
-
-    // --- Data and Position Update Functions ---
-    function updateValuesAndSendData() {
-        const xVal = Math.round((ball.x / canvas.width) * 100);
-        const yVal = Math.round(((canvas.height - ball.y) / canvas.height) * 100);
-
-        xValueSpan.textContent = xVal;
-        yValueSpan.textContent = yVal;
-        
-        sendData(xVal, yVal);
-    }
-
-    async function sendData(x, y) {
-        try {
-            await fetch('/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ x: x, y: y })
-            });
-        } catch (error) {
-            console.error('Error sending data:', error);
-        }
-    }
-
-    function handleInteraction(event) {
-        event.preventDefault();
-        const rect = canvas.getBoundingClientRect();
-        let clientX, clientY;
-        if (event.type.startsWith('touch')) {
-            clientX = event.touches[0].clientX;
-            clientY = event.touches[0].clientY;
-        } else {
-            clientX = event.clientX;
-            clientY = event.clientY;
-        }
-        let newX = clientX - rect.left;
-        let newY = clientY - rect.top;
-        ball.x = Math.max(0, Math.min(canvas.width, newX));
-        ball.y = Math.max(0, Math.min(canvas.height, newY));
-        redraw();
-        updateValuesAndSendData();
-    }
-
-    // --- Event Listeners ---
-    canvas.addEventListener('mousedown', (e) => { isDragging = true; handleInteraction(e); });
-    canvas.addEventListener('mousemove', (e) => { if (isDragging) { handleInteraction(e); } });
-    canvas.addEventListener('mouseup', () => { isDragging = false; });
-    canvas.addEventListener('touchstart', (e) => { isDragging = true; handleInteraction(e); });
-    canvas.addEventListener('touchmove', (e) => { if (isDragging) { handleInteraction(e); } });
-    canvas.addEventListener('touchend', () => { isDragging = false; });
-    
-    // --- NEW: Listen for window resize events ---
-    window.addEventListener('resize', resizeCanvas);
-
-    // --- Initial setup ---
-    resizeCanvas(); // Call it once to set the initial size
-    
-</script>
 
 </body>
 </html>
