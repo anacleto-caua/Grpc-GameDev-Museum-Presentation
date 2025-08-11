@@ -5,7 +5,7 @@ using System.Net;
 using System.Threading;
 using System.IO;
 using System.Text;
-using System.Linq; // Make sure this is included
+using System.Linq;
 using UnityEngine;
 
 #region Core RPC Data Structures

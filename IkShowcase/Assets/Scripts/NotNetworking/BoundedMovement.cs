@@ -44,7 +44,7 @@ public class BoundedMovement : MonoBehaviour
         float percentY = Mathf.Clamp01(inputForY / 100f);
 
 
-        float newZ = Mathf.Lerp(zMax, zMin, percentZ);
+        float newZ = Mathf.Lerp(zMin, zMax, percentZ);
         float newY = Mathf.Lerp(yMin, yMax, percentY);
 
         targetPosition = new Vector3(transform.position.x, newY, newZ);
