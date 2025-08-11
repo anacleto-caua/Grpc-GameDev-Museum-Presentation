@@ -38,14 +38,30 @@ def procedural_showcase():
 
 @app.route('/procedural_showcase/update', methods=['POST'])
 def procedural_showcase_update():
+    """Receives form data and sends it to the procedural generation Unity client."""
     data = request.get_json()
 
-    # Data arived    
-    print(f"Received => {data}")
+    print(f"Received procedural parameters => {data}")
     
-    # return jsonify(status="success", nah="nahhh")
+    result = procedural_unity_client.call("GenerateTerrain", data)
+    return jsonify(status="success", unity_response=result)
 
-# ------------------------ Third unity showcase showing ????????? ------------------------
+# ------------------------ Third unity showcase showing particle effects ------------------------
+@app.route('/particle_showcase')
+def particle_showcase():
+    """Serves the main particle showcase page."""
+    return render_template('particle_showcase.html')
+
+@app.route('/particle_showcase/update', methods=['POST'])
+def particle_showcase_update():
+    """Receives form data and sends it to the particle showcase Unity client."""
+    data = request.get_json()
+
+    print(f"Received particle parameters => {data}")
+    
+    # Assumes you have a 'particle_unity_client' instance created
+    result = particle_unity_client.call("UpdateParticles", data)
+    return jsonify(status="success", unity_response=result)
 
 # ------------------------ General use ------------------------
 def send_qr_code_link(client, link):
@@ -56,42 +72,44 @@ def get_local_ip():
     """Only way I found to get my IP."""
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    try:
-        # Doesn't have to be reachable
-        s.connect(('10.255.255.255', 1))
-        IP = s.getsockname()[0]
-    except Exception:
-        IP = '127.0.0.1'
-        print("IP not found, using local!!!")
-    finally:
-        s.close()
+    # Doesn't have to be reachable
+    s.connect(('10.255.255.255', 1))
+    IP = s.getsockname()[0]
+
+    s.close()
     
     return IP
 
-def make_unity_client(HOST, PORT, service_name):
+def make_unity_client(U_HOST, U_PORT, service_name, flask_port):
     # Create a client for comunication to the unity server
     unity_client = JsonRpcClient(U_HOST, U_PORT)
 
     # Send the URL to Unity before starting the server.
     local_ip = get_local_ip()
-    flask_server_url = f"http://{local_ip}:{PORT}/{service_name}"
+    flask_server_url = f"http://{local_ip}:{flask_port}/{service_name}"
     send_qr_code_link(unity_client, flask_server_url)
 
     return unity_client
 
-
-
 if __name__ == '__main__':
-    global ik_unity_client
-
-    U_HOST = get_local_ip()
-    U_PORT = "8080"
-    ik_unity_client = make_unity_client(U_HOST, U_PORT, "ik_showcase")
-
-    # OPENING THE FLASK SERVER!!!!
     # '0.0.0.0' makes the server accessible from any device on the local network.
     HOST = "0.0.0.0"
     PORT = 5000
 
+    global ik_unity_client, procedural_unity_client
+
+    ik_HOST = get_local_ip()
+    ik_PORT = "8080"
+    ik_unity_client = make_unity_client(ik_HOST, ik_PORT, "ik_showcase", flask_port=PORT)
+
+    pc_HOST = get_local_ip()
+    pc_PORT = "8081"
+    procedural_unity_client = make_unity_client(pc_HOST, pc_PORT, "procedural_showcase", flask_port=PORT)
+    
+    pt_HOST = get_local_ip()
+    pt_PORT = "8082"
+    particle_unity_client = make_unity_client(pt_HOST, pt_PORT, "particle_showcase", flask_port=PORT)
+
+   
     # Start the Flask server
     app.run(host=HOST, port=PORT, debug=True)
