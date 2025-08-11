@@ -1,7 +1,11 @@
 from flask import Flask, render_template, request, jsonify
+from JsonRpcClient import JsonRpcClient
 
 # Initialize the Flask application
 app = Flask(__name__)
+
+# Create a client for comunication to the unity server
+unity_client = JsonRpcClient("127.0.0.1", 8080)
 
 @app.route('/')
 def index():
@@ -14,10 +18,18 @@ def update():
     data = request.get_json()
     x_val = data.get('x')
     y_val = data.get('y')
-    
-    # This is where the data arrives on your computer.
-    # We'll just print it to the console.
+
+    #Data arived    
     print(f"Received => X: {x_val}, Y: {y_val}")
+
+    # Sending data to the unity client
+    try:
+        print("Calling 'MoveObject'...")
+        result = unity_client.call("MoveObject", {"x": x_val, "y": y_val})
+        print(f"Response: '{result}'")
+    except (ConnectionError, ValueError) as e:
+        print(f"\nAn error occurred: {e}")
+        print("Please make sure the Unity server is running correctly.")
     
     # Send a confirmation response back (optional)
     return jsonify(status="success", x=x_val, y=y_val)
