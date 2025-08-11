@@ -136,8 +136,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75077ab1521aee64b9b0c32c5c43ed52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  qrCodeImage: {fileID: 313916726}
   boundedMovement: {fileID: 21244942}
-  qrCodeImage: {fileID: 0}
 --- !u!114 &21244942
 MonoBehaviour:
   m_ObjectHideFlags: 0

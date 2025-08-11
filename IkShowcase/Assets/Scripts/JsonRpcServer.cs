@@ -63,15 +63,22 @@ public class JsonRpcServer
         string jsonResponse;
         int requestId = -1;
 
+
+        Debug.Log(requestBody);
         try
         {
             var methodHelper = JsonUtility.FromJson<MethodNameHelper>(requestBody);
+            Debug.Log(methodHelper);
             requestId = JsonUtility.FromJson<JsonRpcRequest<object>>(requestBody).id;
+            Debug.Log(requestId);
 
             if (_methodHandlers.TryGetValue(methodHelper.method, out var handler))
             {
+
                 var result = handler(requestBody);
+                Debug.Log(result);
                 var response = new JsonRpcSuccessResponse { result = result, id = requestId };
+                Debug.Log(response);
                 jsonResponse = JsonUtility.ToJson(response);
             }
             else { throw new Exception("Method not found."); }
