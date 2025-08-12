@@ -1,3 +1,4 @@
+using System.Globalization;
 using UnityEngine;
 
 [RequireComponent(typeof(ParticleSystem))]
@@ -26,7 +27,7 @@ public class ParticleController : MonoBehaviour
     [Tooltip("The initial color of the particles.")]
     public Color initialParticleColor = new Color(0.024f, 0.714f, 0.831f);
 
-    void Awake()
+    void Start()
     {
         ps = GetComponent<ParticleSystem>();
         psRenderer = GetComponent<ParticleSystemRenderer>();
@@ -64,13 +65,26 @@ public class ParticleController : MonoBehaviour
         main.startLifetime = new ParticleSystem.MinMaxCurve(p.lifespan);
         emission.rateOverTime = new ParticleSystem.MinMaxCurve(p.particleCount / p.lifespan);
 
-        if (ColorUtility.TryParseHtmlString(p.particleColor, out Color newColor))
+        main.startColor = new ParticleSystem.MinMaxGradient(ParseHtmlColor(p.particleColor));
+    }
+
+    private Color ParseHtmlColor(string hexString)
+    {
+        // Remove the '#' if it's there
+        if (hexString.StartsWith("#"))
         {
-            main.startColor = new ParticleSystem.MinMaxGradient(newColor);
+            hexString = hexString.Substring(1);
         }
-        else
+
+        if (hexString.Length == 6)
         {
-            Debug.LogWarning($"Invalid color string received: {p.particleColor}");
+            byte r = byte.Parse(hexString.Substring(0, 2), NumberStyles.HexNumber);
+            byte g = byte.Parse(hexString.Substring(2, 2), NumberStyles.HexNumber);
+            byte b = byte.Parse(hexString.Substring(4, 2), NumberStyles.HexNumber);
+            return new Color32(r, g, b, 255);
         }
+
+        // Return a default color if parsing fails
+        return Color.darkBlue;
     }
 }
